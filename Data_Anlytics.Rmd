@@ -1,6 +1,6 @@
 ---
 title: "Sentiment Analysis Report"
-author: "Colombini Francesco & Jabed Hosen"
+author: "Colombini Francesco & Hosen Jabed"
 date: "sys.Date()"
 output: 
   pdf_document:
