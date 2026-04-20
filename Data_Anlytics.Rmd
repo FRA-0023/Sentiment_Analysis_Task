@@ -19,6 +19,6 @@ private_data_dir <- Sys.getenv("PRIVATE_DATA_DIR", unset = "data")
 
 ## Test jsonlite
 
-```{r}
+```{r, EDA}
 
 ```
