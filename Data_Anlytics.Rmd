@@ -1,0 +1,24 @@
+---
+title: "Sentiment Analysis Report"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+# Setup environment
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	message = FALSE
+)
+
+# Use project root for relative paths and allow a private local data folder.
+knitr::opts_knit$set(root.dir = normalizePath(".", 
+						winslash = "/", mustWork = TRUE))
+private_data_dir <- Sys.getenv("PRIVATE_DATA_DIR", unset = "data")
+```
+
+## Test jsonlite
+
+```{r}
+
+```

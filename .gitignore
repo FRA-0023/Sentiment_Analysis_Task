@@ -1,0 +1,10 @@
+# R session files
+.Rhistory
+.RData
+.Ruserdata
+
+# Local environment variables (often machine-specific and/or secrets)
+.Renviron
+
+# Keep project startup config tracked
+.Rprofile
