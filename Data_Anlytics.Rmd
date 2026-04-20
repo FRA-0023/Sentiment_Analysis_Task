@@ -1,6 +1,17 @@
 ---
 title: "Sentiment Analysis Report"
-output: pdf_document
+author: "Colombini Francesco & Jabed Hosen"
+date: "sys.Date()"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+knitr:
+  opts_chunk:
+    echo: false
+    
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r setup, include=FALSE}
@@ -20,5 +31,9 @@ private_data_dir <- Sys.getenv("PRIVATE_DATA_DIR", unset = "data")
 ## Test jsonlite
 
 ```{r, EDA}
-
+library(tidyverse)
+SA <- as_tibble(read_csv2("sentiment_analysis_test.csv"))
+summary(SA)
+SA_train <- as_tibble(read_csv2("sentiment_analysis_train.csv"))
+summary(SA_train)
 ```
