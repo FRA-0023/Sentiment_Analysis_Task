@@ -46,6 +46,8 @@ library(lubridate)    # robust datetime construction
 library(tidytext)     # unnest_tokens(), stop_words, bind_tf_idf()
 library(knitr)        # kable()
 library(kableExtra)   # styled tables
+library(textclean)
+library(SnowballC)
 
 # ── Statistical testing
 library(rstatix)      # chi_sq_test(), cramer_v(), effect size helpers
@@ -116,7 +118,16 @@ SA_train_cleaned <- SA_train_cleaned %>%
   mutate(date = make_date(Year, Month, Day),
     .after = Day)
 
+cat("Train set")
 summary(SA_train_cleaned)
+
+SA_test_cleaned <- cleaning_table(SA_test)
+SA_test_cleaned <- SA_test_cleaned %>%
+  mutate(date = make_date(Year, Month, Day),
+    .after = Day)
+
+cat("Test set")
+summary(SA_test_cleaned)
 ```
 
 ------------------------------------------------------------------------
@@ -126,7 +137,7 @@ summary(SA_train_cleaned)
 A data quality procedure must be ensured to justify every decision made in the following steps.
 
 ```{r data-quality}
-missing_map <- SA_train %>%
+missing_map <- SA_train_cleaned %>%
   summarise(across(everything(), ~ sum(is.na(.)))) %>%
   pivot_longer(everything(), 
                names_to = "column", 
@@ -136,3 +147,109 @@ missing_map <- SA_train %>%
 missing_map
 ```
 
+```{r duplicates}
+n_exact_dupes <- sum(duplicated(SA_train_cleaned$text))
+cat("Exact text duplicates detected:", n_exact_dupes, "\n")
+
+#remove duplicates, probably from different platforms
+SA_train_cleaned <- SA_train_cleaned %>%
+  distinct(text, .keep_all = TRUE)
+cat("Removed ", n_exact_dupes, "duplicates\n")
+
+# Flag suspiciously short posts (< 3 words — likely noise or retweet stubs)
+SA_train_cleaned <- SA_train_cleaned |>
+  mutate(
+    word_count  = str_count(text, "\\S+"),
+    flag_short  = word_count < 3
+  )
+
+SA_train_cleaned %>%
+  count(flag_short) %>%
+  kable(caption = "Words with < 3 words") %>%
+  kable_styling(bootstrap_options = "condensed", full_width = FALSE)
+```
+
+```{r date-validation}
+# Temporal range validation
+SA_train_cleaned |>
+  summarise(
+    earliest_post = min(date, na.rm = TRUE),
+    latest_post   = max(date, na.rm = TRUE),
+    n_years       = n_distinct(Year),
+    n_invalid_dates = sum(is.na(date))
+  ) %>%
+  kable(caption = "Temporal Integrity Check") |>
+  kable_styling(bootstrap_options = "condensed", full_width = FALSE)
+```
+
+------------------------------------------------------------------------
+
+# Step 3 — Data Cleaning & Text Preprocessing Pipeline
+
+Social media language is adversarial to standard NLP tools, URLs are noise, emojis carry semantic weight and contractions fragment token counts.
+
+```{r text-cleaning-pipeline}
+SA_train_cleaned <- SA_train_cleaned %>%
+  mutate(
+    text_raw = text,
+    text = str_replace_all(text, "&amp;", "&"),
+    text = str_replace_all(text, "&lt;", "<"),
+    text = str_replace_all(text, "&gt;", ">"),
+    text = str_remove_all(text, "https?://\\S+|www\\.\\S+"),
+    text = str_remove_all(text, "@\\w+"),
+    text = str_replace_all(text, "#(\\w+)", "\\1"),
+    text = textclean::replace_contraction(text), 
+    text = textclean::replace_emoji(text),
+    text = textclean::replace_internet_slang(text),
+    text = str_remove_all(text, "[^[:alpha:][:space:]]"),
+    text = str_squish(text),
+    text = str_to_lower(text)
+  )
+
+
+# Quick sanity check: display before/after for 3 rows
+SA_train_cleaned %>%
+  slice(1:3) %>%
+  select(text_raw, text) %>%
+  kable(caption = "Cleaning Pipeline — Before vs After (sample)") %>%
+  kable_styling(bootstrap_options = c("striped","condensed"), full_width = FALSE)
+```
+
+```{r stopwords}
+# remove the words with zero semantic meaning on their own
+custom_stopwords <- bind_rows(
+  get_stopwords(source = "snowball"),
+  tibble(word = c("rt","amp","via","http","https","just","get","got",
+                  "like","im","dont","cant","thats","youre","ive",
+                  "ill","its","youll"),
+         lexicon = "custom_jemib")
+)
+
+# Tokenise, remove stopwords, stem
+tokens <- SA_train_cleaned %>% #first drop the useless column
+  select(Year, date, `Time of Tweet`, sentiment, Platform, text) %>%
+  unnest_tokens(word, text) %>% #explodes the rows
+  anti_join(custom_stopwords, by = "word") %>% #drops the stop words
+  filter(str_length(word) > 2) %>% # drop 1–2 char residuals
+  mutate(word_stem = wordStem(word))  # Stemming on the remaining words
+
+cat("Total tokens after cleaning:", nrow(tokens), "\n")
+cat("Unique stems:", n_distinct(tokens$word_stem), "\n")
+```
+
+------------------------------------------------------------------------
+
+# Step 4 — Univariate EDA: Target Variable (Sentiment Distribution)
+
+Class imbalance is not only a modelling concern, because it can distort the story told in the dashboard. If 40% of posts are neutral, a chart that shows equal bars is misleading. Quantifying imbalance here provides the statistical foundation for any sampling strategy.
+
+```{r sentiment-dist}
+# Frequency table with proportions
+sentiment_freq <- SA_train_cleaned %>%
+  count(sentiment) %>%
+  mutate(percent = paste0(round(n / sum(n) * 100, 1), "%"))
+
+sentiment_freq %>%
+  kable(caption = "Sentiment Class Distribution — Training Set (n = 326)") %>%
+  kable_styling(bootstrap_options = c("striped","condensed"), full_width = FALSE)
+```
