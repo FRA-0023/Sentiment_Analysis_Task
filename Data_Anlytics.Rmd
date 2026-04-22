@@ -91,8 +91,8 @@ SA_train <- as_tibble(read_csv2("sentiment_analysis_train.csv"))
 # - Are column types correct?
 # - Are there obvious out-of-range values?
 # - Does the row count match expectations?
-summary(SA_train)
-head(SA_train)
+#summary(SA_train)
+#head(SA_train)
 ```
 
 ```{r schema-table, echo=FALSE}
@@ -224,7 +224,7 @@ which platform it appeared on, so only the first occurrence is retained.
 # sum(duplicated()) counts occurrences without removing them, giving us the
 # audit figure to report before the removal step.
 n_exact_dupes <- sum(duplicated(SA_train_cleaned$text))
-cat("Exact text duplicates detected:", n_exact_dupes, "\n")
+#cat("Exact text duplicates detected:", n_exact_dupes, "\n")
 
 # distinct keeps only the first occurrence of each
 # unique text value, retaining all other metadata columns (year, platform, etc.)
@@ -252,10 +252,11 @@ SA_train_cleaned %>%
 
 ## 2.3 Temporal Integrity Check
 
-The research question covers a decade of social media data. If the date
-range is narrower than expected, or if any dates are invalid (e.g.
+The research question covers a decade of social media data, so if the
+date range is narrower than expected, or if any dates are invalid (e.g.
 February 30), the temporal trend analysis in Step 6 would be silently
-misleading.
+misleading. For this reason a temporal integrity check was inspected.
+The table below reports the earliest and the latest posts.
 
 ```{r date-validation}
 # n_invalid_dates counts rows where make_date() returned NA — this happens
@@ -276,7 +277,13 @@ SA_train_cleaned %>%
 # Step 3 — Text Cleaning & Preprocessing Pipeline
 
 Social media language is structurally adversarial to standard NLP tools.
-URLs are pure noise with zero semantic content. Emojis encode emotion but are invisible to word-frequency counters. Contractions ("can't", "I'll") fragment token counts by treating the same concept as multiple distinct strings. Each transformation below addresses one specific failure mode. The raw text is always preserved in `text_raw` so that every cleaning decision can be challenged, reversed, or re-run without reloading the original CSV.
+URLs are pure noise with zero semantic content. Emojis encode emotion
+but are invisible to word-frequency counters. Contractions ("can't",
+"I'll") fragment token counts by treating the same concept as multiple
+distinct strings. Each transformation below addresses one specific
+failure mode. The raw text is always preserved in `text_raw` so that
+every cleaning decision can be challenged, reversed, or re-run without
+reloading the original CSV.
 
 ## 3.1 Character-Level Normalisation
 
@@ -337,16 +344,26 @@ SA_train_cleaned <- SA_train_cleaned %>%
 
 # Sanity check: visually verify that the pipeline is behaving as expected
 # on a concrete sample before proceeding to tokenisation.
-SA_train_cleaned %>%
+tbl <- SA_train_cleaned %>%
   slice(1:3) %>%
-  select(text_raw, text) %>%
-  kable(caption = "Cleaning Pipeline — Before vs After (sample)") %>%
-  kable_styling(bootstrap_options = c("striped", "condensed"), full_width = FALSE)
+  mutate(
+    text_raw = str_wrap(text_raw, width = 60),
+    text     = str_wrap(text, width = 60)
+  ) %>%
+  select(text_raw, text)
+
+kable(tbl, format = "latex", booktabs = TRUE,
+      caption = "Cleaning Pipeline — Before vs After (sample)") %>%
+  kable_styling(latex_options = c("hold_position"), full_width = FALSE, font_size = 10) %>%
+  column_spec(1, width = "6cm") %>%
+  column_spec(2, width = "6cm") %>%
+  row_spec(0, bold = TRUE)
+
 ```
 
 ## 3.2 Tokenisation, Stop-word Removal & Stemming
 
-Tokenisation is the pivot point of the entire NLP pipeline — it
+Tokenisation is the pivot point of the entire NLP pipeline, it
 transforms the dataset from a table of documents into a table of
 individual words. Once tokenised, two further transformations are
 applied:
@@ -455,13 +472,13 @@ cat("  Interpretation:", ifelse(
 ), "\n")
 ```
 
-The p-value of **0.08 sits above the conventional alfa = 0.05 threshold**,
-so we formally fail to reject the null hypothesis of balance. However,
-this is a **borderline result** that deserves honest reporting: with
-only 326 posts after deduplication, the test has limited statistical
-power. The descriptive picture — neutral at \~38.7% versus negative at
-\~28.5% — reveals a mild practical imbalance that will be relevant
-context for any accuracy metric computed in Phase 2.
+The p-value of **0.08 sits above the conventional alfa = 0.05
+threshold**, so we formally fail to reject the null hypothesis of
+balance. However, this is a **borderline result** that deserves honest
+reporting: with only 326 posts after deduplication, the test has limited
+statistical power. The descriptive picture, neutral at \~38.7% versus
+negative at \~28.5%, reveals a mild practical imbalance that will be
+relevant context for any accuracy metric computed in next phase.
 
 ## 4.3 Bar Chart
 
@@ -500,15 +517,15 @@ chi-square tests and supplemented with an effect size metric, because a
 statistically significant result in a small dataset does not necessarily
 imply a practically meaningful relationship.
 
-## Sentiment $\times$ Platform
+## 5.1 Sentiment $\times$ Platform
 
-The structural affordances of each platform — Facebook's long-form
-posts, Instagram's caption-driven visual format, and Twitter's
-character-limited microblog — plausibly shape the language users employ,
+The structural affordances of each platform, Facebook's long-form posts,
+Instagram's caption-driven visual format, and Twitter's
+character-limited microblog, plausibly shape the language users employ,
 and therefore the sentiment that language expresses. This hypothesis is
 tested formally rather than assumed, because the platform filter in the
-Phase 3 dashboard should only be presented as analytically meaningful if
-the data supports it.
+dashboard should only be presented as analytically meaningful if the
+data supports it.
 
 ```{r sentiment-platform}
 # Cross-tabulation: row percentages show each platform's sentiment composition.
@@ -556,24 +573,23 @@ cramers_v <- sqrt(chisq_platform$statistic /
                   (sum(platform_mat) * (min(dim(platform_mat)) - 1)))
 
 cat("Platform vs Sentiment association:\n")
-cat("  $\\chi^2$(", chisq_platform$parameter, ") =", round(chisq_platform$statistic, 3), "\n")
-cat("  p-value  =", round(chisq_platform$p.value, 4), "\n")
-cat("  Cramér's V =", round(cramers_v, 3),
-    " -> effect size:", dplyr::case_when(
+cat(" - Chi-squared (", chisq_platform$parameter, ") =", round(chisq_platform$statistic, 3), "\n")
+cat(" - P-value  =", round(chisq_platform$p.value, 4), "\n")
+cat(" - Cramér's V =", round(cramers_v, 3),
+    " - Effect size:", dplyr::case_when(
       cramers_v < 0.1 ~ "negligible",
       cramers_v < 0.2 ~ "small",
       cramers_v < 0.3 ~ "medium",
       TRUE            ~ "large"), "\n")
 ```
 
-With \$\\chi\^2\$(4) = 3.285, p = 0.51, and Cramér's V = 0.071, **the
-data provide no evidence of an association between platform and
-sentiment**. The sentiment composition observed across Facebook,
-Instagram and Twitter is fully consistent with random variation. This is
-itself a finding: it tells Emma Martin that the *medium does not shape
-the emotional message* in this dataset, and it means that platform
-should not be presented as a meaningful driver of sentiment in the
-dashboard.
+With Chi-squared = 3.285, p = 0.51, and Cramér's V = 0.071, **the data
+provide no evidence of an association between platform and sentiment**.
+The sentiment composition observed across Facebook, Instagram and
+Twitter is fully consistent with random variation. This is itself a
+finding: it tells Emma Martin that the *medium does not shapethe
+emotional message* in this dataset, and it means that platform should
+not be presented as a meaningful driver of sentiment in the dashboard.
 
 ```{r sentiment-platform-plot, fig.cap="Figure 2: Sentiment Composition by Platform"}
 SA_train_cleaned %>%
@@ -602,7 +618,7 @@ SA_train_cleaned %>%
 
 ------------------------------------------------------------------------
 
-## Sentiment $\times$ Time of Tweet
+## 5.2 Sentiment $\times$ Time of Tweet
 
 Posting time is a behavioural proxy for emotional state. Morning posts
 may reflect aspirational or goal-setting framing; night posts are more
@@ -662,9 +678,15 @@ SA_train_cleaned %>%
 
 # Step 6 — Temporal EDA: Historical Sentiment Trend (2010–2023)
 
-This is the the client's core research question, *"how has sentiment on social networks evolved overthe last decade?"*, is answered directly here. **Proportions** are plotted rather than raw counts to correct for the unequal number of posts per year: a year with 5 posts and a year with 50 posts are not directly comparable on a raw-count axis.
+This is the the client's core research question, *"how has sentiment on
+social networks evolved overthe last decade?"*, is answered directly
+here. **Proportions** are plotted rather than raw counts to correct for
+the unequal number of posts per year: a year with 5 posts and a year
+with 50 posts are not directly comparable on a raw-count axis.
 
-The point size encodes the post volume per year, allowing readers to discount years with very few observations (where proportion estimates are noisy) without needing to consult a separate table.
+The point size encodes the post volume per year, allowing readers to
+discount years with very few observations (where proportion estimates
+are noisy) without needing to consult a separate table.
 
 ## 6.1 Annual Trend Lines
 
@@ -688,7 +710,7 @@ ggplot(yearly_sentiment, aes(x = Year, y = pct, colour = sentiment, group = sent
   scale_x_continuous(breaks = 2010:2023) +
   scale_size_continuous(name = "Posts\nper year", range = c(2, 7)) +
   labs(
-    title    = "Historical Sentiment Trend on Social Media (2010–2023)",
+    title    = "Historical Sentiment Trend on Social Media \n(2010–2023)",
     subtitle = "Proportions shown to correct for unequal post volume per year",
     x        = "Year",
     y        = "Share of Posts",
@@ -723,7 +745,7 @@ monthly_heat <- SA_train_cleaned %>%
 ggplot(monthly_heat, aes(x = factor(Month, labels = month.abb), y = Platform, fill = pct)) +
   geom_tile(colour = "white", linewidth = 0.5) +
   # Annotate each tile with the exact percentage so the chart is self-contained.
-  geom_text(aes(label = paste0(round(pct * 100, 1), "%")), size = 3) +
+  geom_text(aes(label = paste0(round(pct * 100, 0), "%")), size = 3) +
   scale_fill_gradient(low = "#EAF4F4", high = "#2EED8F",
                       labels = scales::percent_format()) +
   labs(
@@ -755,12 +777,227 @@ write_csv(SA_train_cleaned, "SA_train_cleaned.csv")
 # SA_tokens.csv — the token-level dataset (one row per word per post).
 # This feeds directly into the Phase 3 dashboard's word-frequency queries
 # without requiring the dashboard to re-run the tokenisation pipeline.
-write_csv(tokens, "SA_tokens.csv")
+write_csv(tokens, "SA_train_tokens.csv")
 
 cat("Export complete:\n")
 cat("  SA_train_cleaned.csv —", nrow(SA_train_cleaned), "rows $\times$",
     ncol(SA_train_cleaned), "columns\n")
-cat("  SA_tokens.csv        —", nrow(tokens), "token rows\n")
+cat("  SA_train_tokens.csv        —", nrow(tokens), "token rows\n")
+```
+
+------------------------------------------------------------------------
+
+# Step 8 — Test Set Cleaning & Quality Audit
+
+The test set (`SA_test`) receives the **identical cleaning pipeline**
+applied to the training set in Steps 1--3, with one structural
+difference: it carries no `sentiment` column, because it is the
+unlabelled batch that the algorithm will classify each month. Every
+other transformation, type enforcement, deduplication, text
+normalisation, tokenisation, is applied in the same order and with the
+same parameters to guarantee that the two datasets share an identical
+linguistic representation when the model is applied.
+
+## 8.1 Schema Enforcement
+
+```{r test-schema}
+# cleaning_table_test() mirrors cleaning_table() from Step 1 exactly,
+# but omits the sentiment factor assignment since that column is absent
+# in the test set by design. Keeping two explicit functions rather than
+# a single branching function makes both pipelines independently auditable.
+cleaning_table_test <- function(data) {
+  data$Year            <- as.integer(as.character(data$Year))
+  data$Month           <- as.integer(as.character(data$Month))
+  data$Day             <- as.integer(as.character(data$Day))
+  data$`Time of Tweet` <- factor(data$`Time of Tweet`,
+                                 levels = c("morning", "noon", "night"))
+  data$text            <- clean_text(data$text)
+  data$Platform        <- factor(data$Platform)
+  data
+}
+
+# Apply schema enforcement and derive the date column.
+SA_test_cleaned <- cleaning_table_test(SA_test) %>%
+  mutate(date = make_date(Year, Month, Day), .after = Day)
+
+cat("Test set — post-schema enforcement:\n")
+summary(SA_test_cleaned)
+```
+
+## 8.2 Missing Value Audit
+
+```{r test-missing}
+# Same audit logic as Step 2.1, applied to the test set.
+# A missing date or platform in the test set would cause the Phase 2
+# prediction pipeline to fail silently on those rows.
+missing_map_test <- SA_test_cleaned %>%
+  summarise(across(everything(), ~ sum(is.na(.)))) %>%
+  pivot_longer(everything(),
+               names_to  = "column",
+               values_to = "n_missing") %>%
+  mutate(pct_missing = round((n_missing / nrow(SA_test_cleaned)) * 100, 2))
+
+missing_map_test %>%
+  kable(caption = "Missing Value Audit — Test Set") %>%
+  kable_styling(latex_options = c("striped", "hold_position"), full_width = FALSE)
+```
+
+## 8.3 Duplicate Detection & Removal
+
+```{r test-duplicates}
+# Deduplication on text alone — same rationale as Step 2.2.
+# Cross-platform reposts in the test set would cause the model to produce
+# redundant predictions for the same linguistic content.
+n_exact_dupes_test <- sum(duplicated(SA_test_cleaned$text))
+
+SA_test_cleaned <- SA_test_cleaned %>%
+  distinct(text, .keep_all = TRUE)
+
+cat("Test set — exact text duplicates detected:", n_exact_dupes_test, "\n")
+cat("Rows after deduplication:", nrow(SA_test_cleaned),
+    "| Rows removed:", n_exact_dupes_test, "\n")
+
+# Flag short posts using the same threshold as the training set (< 3 words).
+# Short posts in the test set are not removed — they will be passed to the
+# classifier and flagged in the output for manual review if needed.
+SA_test_cleaned <- SA_test_cleaned %>%
+  mutate(
+    word_count = str_count(text, "\\S+"),
+    flag_short = word_count < 3
+  )
+
+SA_test_cleaned %>%
+  count(flag_short) %>%
+  kable(caption = "Short-Post Flag Audit — Test Set (< 3 words)") %>%
+  kable_styling(latex_options = c("striped", "hold_position"), full_width = FALSE)
+```
+
+## 8.4 Temporal Integrity Check
+
+```{r test-date-validation}
+# Verify that the test set date range is plausible and contains no invalid dates.
+# The test set is expected to contain more recent posts than the training set —
+# any overlap in date ranges is worth flagging for the Phase 2 analyst.
+SA_test_cleaned %>%
+  summarise(
+    earliest_post   = min(date, na.rm = TRUE),
+    latest_post     = max(date, na.rm = TRUE),
+    n_years         = n_distinct(Year),
+    n_invalid_dates = sum(is.na(date))
+  ) %>%
+  kable(caption = "Temporal Integrity Check — Test Set") %>%
+  kable_styling(latex_options = c("hold_position"), full_width = FALSE)
+```
+
+## 8.5 Character-Level Text Normalisation
+
+```{r test-text-cleaning}
+# Identical transformation sequence to Step 3.1.
+# Applied in the same order to guarantee that the text representation
+# in SA_test_cleaned is comparable to SA_train_cleaned word-for-word.
+SA_test_cleaned <- SA_test_cleaned %>%
+  mutate(
+    text_raw = text,
+    text = str_replace_all(text, "&amp;", "&"),
+    text = str_replace_all(text, "&lt;",  "<"),
+    text = str_replace_all(text, "&gt;",  ">"),
+    text = str_remove_all(text, "https?://\\S+|www\\.\\S+"),
+    text = str_remove_all(text, "@\\w+"),
+    text = str_replace_all(text, "#(\\w+)", "\\1"),
+    text = textclean::replace_contraction(text),
+    text = textclean::replace_emoji(text),
+    text = textclean::replace_internet_slang(text),
+    text = str_remove_all(text, "[^[:alpha:][:space:]]"),
+    text = str_squish(text),
+    text = str_to_lower(text)
+  )
+
+# Sanity check: display before/after for 3 rows to confirm the pipeline
+# is producing the expected output on the test corpus.
+tbl_test <- SA_test_cleaned %>%
+  slice(1:3) %>%
+  mutate(
+    text_raw = str_wrap(text_raw, width = 55),
+    text     = str_wrap(text,     width = 55)
+  ) %>%
+  select(text_raw, text)
+
+kable(tbl_test, format = "latex", booktabs = TRUE,
+      caption = "Test Set Cleaning — Before vs After (sample)") %>%
+  kable_styling(latex_options = c("hold_position"), full_width = FALSE, font_size = 10) %>%
+  column_spec(1, width = "6cm") %>%
+  column_spec(2, width = "6cm") %>%
+  row_spec(0, bold = TRUE)
+```
+
+## 8.6 Tokenisation, Stop-word Removal & Stemming
+
+```{r test-tokens}
+# Same tokenisation pipeline as Step 3.2, using the identical custom_stopwords
+# lexicon and wordStem() call. The test token table is produced here for two
+# purposes:
+# (1) Word-frequency inspection — confirming that the test vocabulary is
+#     broadly consistent with the training vocabulary (no domain shift).
+# (2) Dashboard input — Phase 3 may display word clouds for newly classified
+#     test batches, requiring a token-level dataset.
+# Note: no sentiment column is available here — it will be joined back after
+# Phase 2 classification.
+tokens_test <- SA_test_cleaned %>%
+  select(Year, date, `Time of Tweet`, Platform, text) %>%
+  unnest_tokens(word, text) %>%
+  anti_join(custom_stopwords, by = "word") %>%
+  filter(str_length(word) > 2) %>%
+  mutate(word_stem = wordStem(word))
+
+cat("Test set — total tokens after cleaning:", nrow(tokens_test), "\n")
+cat("Test set — unique stems:", n_distinct(tokens_test$word_stem), "\n")
+```
+
+## 8.7 Vocabulary Overlap: Train vs Test
+
+```{r vocab-overlap}
+# Comparing the unique stem vocabularies of the two sets is a quick diagnostic
+# for domain shift: if the test set introduces a large share of stems never
+# seen in training, the Phase 2 model may perform poorly on those tokens.
+train_stems <- unique(tokens$word_stem)
+test_stems  <- unique(tokens_test$word_stem)
+
+n_shared    <- length(intersect(train_stems, test_stems))
+n_test_only <- length(setdiff(test_stems, train_stems))
+n_train_only<- length(setdiff(train_stems, test_stems))
+
+tibble(
+  Metric  = c("Stems in both train & test",
+               "Stems in test only (unseen by model)",
+               "Stems in train only (absent from test)"),
+  Count   = c(n_shared, n_test_only, n_train_only),
+  Share   = paste0(round(c(n_shared, n_test_only, n_train_only) /
+                           length(union(train_stems, test_stems)) * 100, 1), "%")
+) %>%
+  kable(caption = "Vocabulary Overlap: Training vs Test Stems") %>%
+  kable_styling(latex_options = c("striped", "hold_position"), full_width = FALSE)
+```
+
+A high share of test-only stems signals potential domain shift and
+should be reported to the Phase 2 analyst before model deployment. A
+rate below 15% is generally considered acceptable for a same-domain
+corpus.
+
+## 8.8 Test Set Export
+
+```{r test-export}
+# SA_test_cleaned.csv — cleaned test set ready for Phase 2 classification.
+# The sentiment column is intentionally absent; it will be populated by
+# the Phase 2 algorithm and joined back before dashboard ingestion.
+write_csv(SA_test_cleaned, "SA_test_cleaned.csv")
+
+# SA_test_tokens.csv — token-level test set for Phase 3 dashboard queries.
+write_csv(tokens_test, "SA_test_tokens.csv")
+
+cat("Test set export complete:\n")
+cat("  SA_test_cleaned.csv  —", nrow(SA_test_cleaned),  "rows x",
+    ncol(SA_test_cleaned),  "columns\n")
+cat("  SA_test_tokens.csv   —", nrow(tokens_test), "token rows\n")
 ```
 
 ------------------------------------------------------------------------
