@@ -1,0 +1,10 @@
+{
+  "editor.codeLens": true,
+  "[rmd]": {
+    "editor.codeLens": true
+  },
+  "files.associations": {
+    "*.Rmd": "rmd",
+    "*.rmd": "rmd"
+  }
+}

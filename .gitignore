@@ -1,0 +1,18 @@
+# R session files
+.Rhistory
+.RData
+.Ruserdata
+
+# Local environment variables (often machine-specific and/or secrets)
+.Renviron
+
+# Keep project startup config tracked
+.Rprofile
+
+# macOS system files
+.DS_Store
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
