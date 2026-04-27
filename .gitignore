@@ -8,3 +8,14 @@
 
 # Keep project startup config tracked
 .Rprofile
+<<<<<<< HEAD
+=======
+
+# macOS system files
+.DS_Store
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+>>>>>>> eb4ee3b93b74a3dc7f99001720fe86ce05591261
