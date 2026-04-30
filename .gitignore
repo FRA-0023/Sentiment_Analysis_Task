@@ -3,13 +3,11 @@
 .RData
 .Ruserdata
 
-# Local environment variables (often machine-specific and/or secrets)
+# Local environment variables
 .Renviron
 
-# Keep project startup config tracked
+# Project startup config
 .Rprofile
-<<<<<<< HEAD
-=======
 
 # macOS system files
 .DS_Store
@@ -18,4 +16,3 @@
 __pycache__/
 *.py[cod]
 *$py.class
->>>>>>> eb4ee3b93b74a3dc7f99001720fe86ce05591261
