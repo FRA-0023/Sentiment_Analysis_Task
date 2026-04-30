@@ -88,7 +88,7 @@
 \subtitle{Sentiment Analysis Project \textbar{} JEMIB IT\&BI Area ·
 Spring 2026}
 \author{Colombini Francesco \& Hosen Jabed}
-\date{aprile 22, 2026}
+\date{May 01, 2026}
 
 \begin{document}
 \maketitle
@@ -218,10 +218,10 @@ TRUE & 17\\
 Check}\label{temporal-integrity-check}
 
 The research question covers a decade of social media data, so if the
-date range is narrower than expected, or if any dates are invalid
-(e.g.~February 30), the temporal trend analysis in Step 6 would be
-silently misleading. For this reason a temporal integrity check was
-inspected. The table below reports the earliest and the latest posts.
+date range is narrower than expected, or if any dates are invalid (e.g.
+February 30), the temporal trend analysis in Step 6 would be silently
+misleading. For this reason a temporal integrity check was inspected.
+The table below reports the earliest and the latest posts.
 
 \begin{longtable}[t]{llrr}
 \caption{\label{tab:date-validation}Temporal Integrity Check}\\
@@ -361,7 +361,7 @@ accuracy metric computed in next phase.
 
 \begin{figure}[H]
 
-{\centering \includegraphics{Data_Anlytics_files/figure-latex/sentiment-bar-1} 
+{\centering \includegraphics{Data_Analysis_Phase1_files/figure-latex/sentiment-bar-1} 
 
 }
 
@@ -379,8 +379,8 @@ with chi-square tests and supplemented with an effect size metric,
 because a statistically significant result in a small dataset does not
 necessarily imply a practically meaningful relationship.
 
-\subsection{\texorpdfstring{Sentiment \(\times\)
-Platform}{Sentiment \textbackslash times Platform}}\label{sentiment-times-platform}
+\subsection{\texorpdfstring{5.1 Sentiment \(\times\)
+Platform}{5.1 Sentiment \textbackslash times Platform}}\label{sentiment-times-platform}
 
 The structural affordances of each platform, Facebook's long-form posts,
 Instagram's caption-driven visual format, and Twitter's
@@ -428,7 +428,7 @@ dashboard.
 
 \begin{figure}[H]
 
-{\centering \includegraphics{Data_Anlytics_files/figure-latex/sentiment-platform-plot-1} 
+{\centering \includegraphics{Data_Analysis_Phase1_files/figure-latex/sentiment-platform-plot-1} 
 
 }
 
@@ -437,8 +437,8 @@ dashboard.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{Sentiment \(\times\) Time of
-Tweet}{Sentiment \textbackslash times Time of Tweet}}\label{sentiment-times-time-of-tweet}
+\subsection{\texorpdfstring{5.2 Sentiment \(\times\) Time of
+Tweet}{5.2 Sentiment \textbackslash times Time of Tweet}}\label{sentiment-times-time-of-tweet}
 
 Posting time is a behavioural proxy for emotional state. Morning posts
 may reflect aspirational or goal-setting framing; night posts are more
@@ -460,7 +460,7 @@ night & 30.3\% (33) & 34.9\% (38) & 34.9\% (38)\\
 
 \begin{figure}[H]
 
-{\centering \includegraphics{Data_Anlytics_files/figure-latex/time-plot-1} 
+{\centering \includegraphics{Data_Analysis_Phase1_files/figure-latex/time-plot-1} 
 
 }
 
@@ -487,7 +487,7 @@ are noisy) without needing to consult a separate table.
 
 \begin{figure}[H]
 
-{\centering \includegraphics{Data_Anlytics_files/figure-latex/yearly-trend-1} 
+{\centering \includegraphics{Data_Analysis_Phase1_files/figure-latex/yearly-trend-1} 
 
 }
 
@@ -505,7 +505,7 @@ patterns that the annual trend lines cannot capture.
 
 \begin{figure}[H]
 
-{\centering \includegraphics{Data_Anlytics_files/figure-latex/monthly-heatmap-1} 
+{\centering \includegraphics{Data_Analysis_Phase1_files/figure-latex/monthly-heatmap-1} 
 
 }
 
@@ -533,7 +533,165 @@ pipeline remains fully auditable end-to-end.
 \end{verbatim}
 
 \begin{verbatim}
-##   SA_tokens.csv        — 1900 token rows
+##   SA_train_tokens.csv        — 1900 token rows
+\end{verbatim}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Step 8 --- Test Set Cleaning \& Quality
+Audit}\label{step-8-test-set-cleaning-quality-audit}
+
+The test set (\texttt{SA\_test}) receives the \textbf{identical cleaning
+pipeline} applied to the training set in Steps 1--3, with one structural
+difference: it carries no \texttt{sentiment} column, because it is the
+unlabelled batch that the algorithm will classify each month. Every
+other transformation, type enforcement, deduplication, text
+normalisation, tokenisation, is applied in the same order and with the
+same parameters to guarantee that the two datasets share an identical
+linguistic representation when the model is applied.
+
+\subsection{8.1 Schema Enforcement}\label{schema-enforcement}
+
+\begin{verbatim}
+## Test set — post-schema enforcement:
+\end{verbatim}
+
+\begin{verbatim}
+##       Year          Month             Day             date           
+##  Min.   :2023   Min.   : 6.000   Min.   : 1.00   Min.   :2023-06-01  
+##  1st Qu.:2023   1st Qu.: 7.000   1st Qu.: 7.00   1st Qu.:2023-07-06  
+##  Median :2023   Median : 8.000   Median :14.00   Median :2023-08-24  
+##  Mean   :2023   Mean   : 8.051   Mean   :13.66   Mean   :2023-08-14  
+##  3rd Qu.:2023   3rd Qu.: 9.000   3rd Qu.:20.00   3rd Qu.:2023-09-16  
+##  Max.   :2023   Max.   :10.000   Max.   :30.00   Max.   :2023-10-17  
+##  NA's   :1                                       NA's   :1           
+##  Time of Tweet     text           sentiment           Platform 
+##  morning:31    Length:79          Mode:logical   Facebook :29  
+##  noon   :23    Class :character   NA's:79        Instagram:27  
+##  night  :25    Mode  :character                  Twitter  :23  
+##                                                                
+##                                                                
+##                                                                
+## 
+\end{verbatim}
+
+\subsection{8.2 Missing Value Audit}\label{missing-value-audit-1}
+
+\begin{longtable}[t]{lrr}
+\caption{\label{tab:test-missing}Missing Value Audit — Test Set}\\
+\toprule
+column & n\_missing & pct\_missing\\
+\midrule
+\cellcolor{gray!10}{Year} & \cellcolor{gray!10}{1} & \cellcolor{gray!10}{1.27}\\
+Month & 0 & 0.00\\
+\cellcolor{gray!10}{Day} & \cellcolor{gray!10}{0} & \cellcolor{gray!10}{0.00}\\
+date & 1 & 1.27\\
+\cellcolor{gray!10}{Time of Tweet} & \cellcolor{gray!10}{0} & \cellcolor{gray!10}{0.00}\\
+\addlinespace
+text & 0 & 0.00\\
+\cellcolor{gray!10}{sentiment} & \cellcolor{gray!10}{79} & \cellcolor{gray!10}{100.00}\\
+Platform & 0 & 0.00\\
+\bottomrule
+\end{longtable}
+
+\subsection{8.3 Duplicate Detection \&
+Removal}\label{duplicate-detection-removal-1}
+
+\begin{verbatim}
+## Test set — exact text duplicates detected: 12
+\end{verbatim}
+
+\begin{verbatim}
+## Rows after deduplication: 67 | Rows removed: 12
+\end{verbatim}
+
+\begin{longtable}[t]{lr}
+\caption{\label{tab:test-duplicates}Short-Post Flag Audit — Test Set (< 3 words)}\\
+\toprule
+flag\_short & n\\
+\midrule
+\cellcolor{gray!10}{FALSE} & \cellcolor{gray!10}{66}\\
+TRUE & 1\\
+\bottomrule
+\end{longtable}
+
+\subsection{8.4 Temporal Integrity
+Check}\label{temporal-integrity-check-1}
+
+\begin{longtable}[t]{llrr}
+\caption{\label{tab:test-date-validation}Temporal Integrity Check — Test Set}\\
+\toprule
+earliest\_post & latest\_post & n\_years & n\_invalid\_dates\\
+\midrule
+2023-06-01 & 2023-10-17 & 2 & 1\\
+\bottomrule
+\end{longtable}
+
+\subsection{8.5 Character-Level Text
+Normalisation}\label{character-level-text-normalisation}
+
+\begin{table}[!h]
+\centering
+\caption{\label{tab:test-text-cleaning}Test Set Cleaning — Before vs After (sample)}
+\centering
+\fontsize{10}{12}\selectfont
+\begin{tabular}[t]{>{\raggedright\arraybackslash}p{6cm}>{\raggedright\arraybackslash}p{6cm}}
+\toprule
+\textbf{text\_raw} & \textbf{text}\\
+\midrule
+almost died. laptop screen was set to 100\% brightness
+after i reinstalled windows vista. & almost died laptop screen was set to brightness after i
+reinstalled windows vista\\
+waiting for tish to get off. got to drive my moms crv
+to pick her up all my myself and duckie. first time & waiting for tish to get off got to drive my moms crv to
+pick her up all my myself and duckie first time\\
+your attitude looks like autistics child & your attitude looks like autistics child\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{8.6 Tokenisation, Stop-word Removal \&
+Stemming}\label{tokenisation-stop-word-removal-stemming-1}
+
+\begin{verbatim}
+## Test set — total tokens after cleaning: 428
+\end{verbatim}
+
+\begin{verbatim}
+## Test set — unique stems: 278
+\end{verbatim}
+
+\subsection{8.7 Vocabulary Overlap: Train vs
+Test}\label{vocabulary-overlap-train-vs-test}
+
+\begin{longtable}[t]{lrl}
+\caption{\label{tab:vocab-overlap}Vocabulary Overlap: Training vs Test Stems}\\
+\toprule
+Metric & Count & Share\\
+\midrule
+\cellcolor{gray!10}{Stems in both train \& test} & \cellcolor{gray!10}{152} & \cellcolor{gray!10}{13.7\%}\\
+Stems in test only (unseen by model) & 126 & 11.3\%\\
+\cellcolor{gray!10}{Stems in train only (absent from test)} & \cellcolor{gray!10}{835} & \cellcolor{gray!10}{75\%}\\
+\bottomrule
+\end{longtable}
+
+A high share of test-only stems signals potential domain shift and
+should be reported to the Phase 2 analyst before model deployment. A
+rate below 15\% is generally considered acceptable for a same-domain
+corpus.
+
+\subsection{8.8 Test Set Export}\label{test-set-export}
+
+\begin{verbatim}
+## Test set export complete:
+\end{verbatim}
+
+\begin{verbatim}
+##   SA_test_cleaned.csv  — 67 rows x 11 columns
+\end{verbatim}
+
+\begin{verbatim}
+##   SA_test_tokens.csv   — 428 token rows
 \end{verbatim}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
