@@ -32,13 +32,16 @@ except LookupError:
 # Using local path for CSV files (parent directory)
 BASE_PATH = '../'
 RANDOM_STATE = 12345
-BATCH_SIZE = 16 
-MAX_LEN = 64 
-NUM_EPOCHS = 20
-LEARNING_RATE = 1e-5
-WEIGHT_DECAY = 0.01
-WARMUP_STEPS = 500
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+set_seed(RANDOM_STATE)
 
 class_names = ['negative', 'neutral', 'positive']
 num_labels = len(class_names)
