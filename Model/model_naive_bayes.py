@@ -1,6 +1,20 @@
+import torch
 from common_utils import (
-    load_project_data, augment_text_data, class_names, RANDOM_STATE
+    load_project_data, augment_text_data, class_names
 )
+
+# --- CONFIGURATION & HYPERPARAMETERS ---
+BASE_PATH = '../'
+RANDOM_STATE = 12345
+BATCH_SIZE = 16 
+MAX_LEN = 64 
+NUM_EPOCHS = 20
+LEARNING_RATE = 1e-5
+WEIGHT_DECAY = 0.01
+WARMUP_STEPS = 500
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+MAX_FEATURES = 5000
+ALPHA_PARAM = 1.0
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
@@ -39,12 +53,12 @@ labels_data_encoded = train_data["sentiment_idx"].values
 )
 
 # TF-IDF Vectorization
-vectorizer = TfidfVectorizer(max_features=5000)
+vectorizer = TfidfVectorizer(max_features=MAX_FEATURES)
 X_train_tfidf = vectorizer.fit_transform(training_texts)
 X_test_tfidf = vectorizer.transform(testing_texts)
 
 # Initialize and Train Multinomial Naive Bayes Model
-mnb_model = MultinomialNB()
+mnb_model = MultinomialNB(alpha=ALPHA_PARAM)
 mnb_model.fit(X_train_tfidf, training_labels)
 
 # Evaluate Multinomial Naive Bayes Model

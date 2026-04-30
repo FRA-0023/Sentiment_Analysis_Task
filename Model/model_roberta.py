@@ -11,9 +11,19 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer, get_
 
 from common_utils import (
     load_project_data, augment_text_data, class_names, num_labels,
-    SentimentDataset, train_high_accuracy_model, evaluate_test,
-    RANDOM_STATE, MAX_LEN, BATCH_SIZE, DEVICE, LEARNING_RATE, WEIGHT_DECAY, NUM_EPOCHS, BASE_PATH
+    SentimentDataset, train_high_accuracy_model, evaluate_test
 )
+
+# --- CONFIGURATION & HYPERPARAMETERS ---
+BASE_PATH = '../'
+RANDOM_STATE = 12345
+BATCH_SIZE = 16 
+MAX_LEN = 64 
+NUM_EPOCHS = 20
+LEARNING_RATE = 1e-5
+WEIGHT_DECAY = 0.01
+WARMUP_STEPS = 500
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 print("--- Training RoBERTa Model ---")
 MODEL_NAME = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
