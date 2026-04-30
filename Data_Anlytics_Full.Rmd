@@ -1029,17 +1029,46 @@ Given the sensitivity of deep learning models to random initialization, a strict
 We deployed a diverse suite of models to evaluate the trade-offs between computational complexity and classification accuracy.
 
 ### 9.2.1 Transformer-Based Architectures (Deep Learning)
-These models utilize the self-attention mechanism to capture deep contextual relationships within the text.
-1.  **RoBERTa (roberta-base):** A robustly optimized version of BERT that was trained on a larger corpus with longer sequences and larger batches.
-2.  **BERT (bert-base-uncased):** The industry standard for bidirectional context understanding.
-3.  **Multilingual BERT (bert-base-multilingual-uncased):** Evaluated for its ability to generalize across different linguistic styles.
-4.  **DistilBERT (distilbert-base-uncased):** A smaller, faster, and lighter version of BERT that retains approximately 97% of its performance.
+
+These models utilize the self-attention mechanism to capture deep contextual relationships within the text, moving beyond simple word-matching to understand the "meaning" of sentences.
+
+1.  **RoBERTa (roberta-base):** 
+    *   **Architecture:** RoBERTa (Robustly Optimized BERT Approach) is an evolution of the original BERT model. It was trained using a significantly larger dataset (160GB of text vs. 16GB for BERT) and for a longer duration.
+    *   **Key Innovation:** It removes the "Next Sentence Prediction" task from BERT, focusing entirely on "Masked Language Modeling." This allows it to learn more robust linguistic representations.
+    *   **Performance in this Project:** It consistently achieved the highest accuracy (86.67%) because of its superior ability to handle the subtle nuances and sarcasm often found in social media posts.
+
+2.  **BERT (bert-base-uncased):** 
+    *   **Architecture:** The pioneer of bidirectional Transformers. "Uncased" means it treats "Happy" and "happy" identically, reducing the vocabulary size and focusing on semantic content.
+    *   **Working Principle:** Unlike previous models that read text left-to-right or right-to-left, BERT reads the entire sequence of words at once. This allows it to understand the context of a word based on all of its surroundings.
+    *   **Role in Project:** Served as the primary benchmark for contextual models.
+
+3.  **Multilingual BERT (bert-base-multilingual-uncased):** 
+    *   **Architecture:** Trained on the top 104 languages with the largest Wikipedias. 
+    *   **Capability:** It shares a common vocabulary across all languages, enabling "zero-shot" transfer where it can understand concepts in one language even if it was primarily trained on another.
+    *   **Significance:** Included to ensure the pipeline is robust to the multi-lingual slang and loanwords common in Italian/French social media contexts.
+
+4.  **DistilBERT (distilbert-base-uncased):** 
+    *   **Architecture:** A "distilled" version of BERT. It uses a technique called "Knowledge Distillation" where a smaller "student" model (DistilBERT) is trained to mimic the behavior of a larger "teacher" model (BERT).
+    *   **Trade-off:** It is 40% smaller and 60% faster than BERT while retaining 97% of its language understanding capabilities.
+    *   **Observed Behavior:** In our specific dataset, it struggled slightly more with "Neutral" sentiment, showing that for very short social media posts, the full complexity of BERT/RoBERTa is often necessary.
 
 ### 9.2.2 Statistical Classifiers (Machine Learning)
-These models rely on frequency-based feature extraction (TF-IDF).
-5.  **Logistic Regression:** A linear model optimized using the `liblinear` solver.
-6.  **Support Vector Machine (SVM):** Implemented with a linear kernel to find the optimal separating hyperplane in a high-dimensional TF-IDF space.
-7.  **Multinomial Naive Bayes:** A probabilistic classifier based on Bayes' theorem with the assumption of independence between features.
+
+These models rely on frequency-based feature extraction (TF-IDF). They treat text as a "bag of words," counting how often specific terms appear.
+
+5.  **Logistic Regression:** 
+    *   **Methodology:** A linear model that uses a logistic function (sigmoid) to model the probability of a post belonging to a specific sentiment class.
+    *   **Strengths:** Extremely fast and highly interpretable. It assigns a specific "weight" to each word, allowing us to see which words (like "sad," "great," or "wait") are the strongest predictors of sentiment.
+    *   **Project Finding:** Surprised the team by outperforming DistilBERT, proving that for this dataset, simple keyword presence is a very powerful signal.
+
+6.  **Support Vector Machine (SVM):** 
+    *   **Methodology:** Works by finding the "Optimal Separating Hyperplane"—a mathematical boundary that maximizes the distance between different sentiment classes in a high-dimensional space.
+    *   **Kernel:** We utilized a Linear Kernel, which is highly effective for high-dimensional text data where classes are often linearly separable.
+    *   **Reliability:** Known for being robust against overfitting, especially in cases where the number of features (words) exceeds the number of samples.
+
+7.  **Multinomial Naive Bayes:** 
+    *   **Methodology:** Based on Bayes' Theorem, it calculates the probability of a sentiment given a set of words. It assumes that every word is "independent" of every other word (the "naive" assumption).
+    *   **Utility:** Despite its simplicity, it is the industry standard for baseline text classification. It is incredibly efficient to train and served as the project's performance "floor."
 
 ## 9.3 Training & Optimization Hyperparameters
 
