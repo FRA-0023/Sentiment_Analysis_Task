@@ -768,26 +768,153 @@ computational complexity and classification accuracy.
 Learning)}\label{transformer-based-architectures-deep-learning}
 
 These models utilize the self-attention mechanism to capture deep
-contextual relationships within the text. 1. \textbf{RoBERTa
-(roberta-base):} A robustly optimized version of BERT that was trained
-on a larger corpus with longer sequences and larger batches. 2.
-\textbf{BERT (bert-base-uncased):} The industry standard for
-bidirectional context understanding. 3. \textbf{Multilingual BERT
-(bert-base-multilingual-uncased):} Evaluated for its ability to
-generalize across different linguistic styles. 4. \textbf{DistilBERT
-(distilbert-base-uncased):} A smaller, faster, and lighter version of
-BERT that retains approximately 97\% of its performance.
+contextual relationships within the text, moving beyond simple
+word-matching to understand the ``meaning'' of sentences.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{RoBERTa (roberta-base):}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{Architecture:} RoBERTa (Robustly Optimized BERT Approach) is
+    an evolution of the original BERT model. It was trained using a
+    significantly larger dataset (160GB of text vs.~16GB for BERT) and
+    for a longer duration.
+  \item
+    \textbf{Key Innovation:} It removes the ``Next Sentence Prediction''
+    task from BERT, focusing entirely on ``Masked Language Modeling.''
+    This allows it to learn more robust linguistic representations.
+  \item
+    \textbf{Performance in this Project:} It consistently achieved the
+    highest accuracy (86.67\%) because of its superior ability to handle
+    the subtle nuances and sarcasm often found in social media posts.
+  \end{itemize}
+\item
+  \textbf{BERT (bert-base-uncased):}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{Architecture:} The pioneer of bidirectional Transformers.
+    ``Uncased'' means it treats ``Happy'' and ``happy'' identically,
+    reducing the vocabulary size and focusing on semantic content.
+  \item
+    \textbf{Working Principle:} Unlike previous models that read text
+    left-to-right or right-to-left, BERT reads the entire sequence of
+    words at once. This allows it to understand the context of a word
+    based on all of its surroundings.
+  \item
+    \textbf{Role in Project:} Served as the primary benchmark for
+    contextual models.
+  \end{itemize}
+\item
+  \textbf{Multilingual BERT (bert-base-multilingual-uncased):}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{Architecture:} Trained on the top 104 languages with the
+    largest Wikipedias.
+  \item
+    \textbf{Capability:} It shares a common vocabulary across all
+    languages, enabling ``zero-shot'' transfer where it can understand
+    concepts in one language even if it was primarily trained on
+    another.
+  \item
+    \textbf{Significance:} Included to ensure the pipeline is robust to
+    the multi-lingual slang and loanwords common in Italian/French
+    social media contexts.
+  \end{itemize}
+\item
+  \textbf{DistilBERT (distilbert-base-uncased):}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{Architecture:} A ``distilled'' version of BERT. It uses a
+    technique called ``Knowledge Distillation'' where a smaller
+    ``student'' model (DistilBERT) is trained to mimic the behavior of a
+    larger ``teacher'' model (BERT).
+  \item
+    \textbf{Trade-off:} It is 40\% smaller and 60\% faster than BERT
+    while retaining 97\% of its language understanding capabilities.
+  \item
+    \textbf{Observed Behavior:} In our specific dataset, it struggled
+    slightly more with ``Neutral'' sentiment, showing that for very
+    short social media posts, the full complexity of BERT/RoBERTa is
+    often necessary.
+  \end{itemize}
+\end{enumerate}
 
 \subsubsection{9.2.2 Statistical Classifiers (Machine
 Learning)}\label{statistical-classifiers-machine-learning}
 
-These models rely on frequency-based feature extraction (TF-IDF). 5.
-\textbf{Logistic Regression:} A linear model optimized using the
-\texttt{liblinear} solver. 6. \textbf{Support Vector Machine (SVM):}
-Implemented with a linear kernel to find the optimal separating
-hyperplane in a high-dimensional TF-IDF space. 7. \textbf{Multinomial
-Naive Bayes:} A probabilistic classifier based on Bayes' theorem with
-the assumption of independence between features.
+These models rely on frequency-based feature extraction (TF-IDF). They
+treat text as a ``bag of words,'' counting how often specific terms
+appear.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{4}
+\tightlist
+\item
+  \textbf{Logistic Regression:}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{Methodology:} A linear model that uses a logistic function
+    (sigmoid) to model the probability of a post belonging to a specific
+    sentiment class.
+  \item
+    \textbf{Strengths:} Extremely fast and highly interpretable. It
+    assigns a specific ``weight'' to each word, allowing us to see which
+    words (like ``sad,'' ``great,'' or ``wait'') are the strongest
+    predictors of sentiment.
+  \item
+    \textbf{Project Finding:} Surprised the team by outperforming
+    DistilBERT, proving that for this dataset, simple keyword presence
+    is a very powerful signal.
+  \end{itemize}
+\item
+  \textbf{Support Vector Machine (SVM):}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{Methodology:} Works by finding the ``Optimal Separating
+    Hyperplane''---a mathematical boundary that maximizes the distance
+    between different sentiment classes in a high-dimensional space.
+  \item
+    \textbf{Kernel:} We utilized a Linear Kernel, which is highly
+    effective for high-dimensional text data where classes are often
+    linearly separable.
+  \item
+    \textbf{Reliability:} Known for being robust against overfitting,
+    especially in cases where the number of features (words) exceeds the
+    number of samples.
+  \end{itemize}
+\item
+  \textbf{Multinomial Naive Bayes:}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{Methodology:} Based on Bayes' Theorem, it calculates the
+    probability of a sentiment given a set of words. It assumes that
+    every word is ``independent'' of every other word (the ``naive''
+    assumption).
+  \item
+    \textbf{Utility:} Despite its simplicity, it is the industry
+    standard for baseline text classification. It is incredibly
+    efficient to train and served as the project's performance
+    ``floor.''
+  \end{itemize}
+\end{enumerate}
 
 \subsection{9.3 Training \& Optimization
 Hyperparameters}\label{training-optimization-hyperparameters}
@@ -926,6 +1053,8 @@ Transformer models excel at distinguishing between \textbf{Positive} and
 \caption{Confusion Matrix: RoBERTa}\label{fig:cm-roberta}
 \end{figure}
 
+\emph{RoBERTa shows the cleanest diagonal, confirming its superior ability to handle complex social media nuances and sarcastic tones.}
+
 \begin{figure}[H]
 
 {\centering \includegraphics[width=0.75\linewidth]{Model/Result/multilingual_bert_confusion_matrix} 
@@ -935,6 +1064,8 @@ Transformer models excel at distinguishing between \textbf{Positive} and
 \caption{Confusion Matrix: Multilingual BERT}\label{fig:cm-bert-multi}
 \end{figure}
 
+\emph{The multilingual variant demonstrates similar patterns to RoBERTa, suggesting that its broad language training remains highly effective for English sentiment.}
+
 \begin{figure}[H]
 
 {\centering \includegraphics[width=0.75\linewidth]{Model/Result/bert_confusion_matrix} 
@@ -943,6 +1074,8 @@ Transformer models excel at distinguishing between \textbf{Positive} and
 
 \caption{Confusion Matrix: BERT}\label{fig:cm-bert}
 \end{figure}
+
+\emph{BERT Base maintains high accuracy for negative sentiment detection but shows slight confusion with neutral posts that use descriptive language.}
 
 \subsubsection{10.3.2 Classical ML performance (LogReg \&
 SVM)}\label{classical-ml-performance-logreg-svm}
@@ -959,6 +1092,8 @@ negation (e.g., ``not bad'' being classified as Negative).
 \caption{Confusion Matrix: Logistic Regression}\label{fig:cm-logreg}
 \end{figure}
 
+\emph{Logistic Regression displays surprisingly sharp classification for a keyword-based approach, though it lacks the contextual depth of Transformers.}
+
 \begin{figure}[H]
 
 {\centering \includegraphics[width=0.75\linewidth]{Model/Result/svm_confusion_matrix} 
@@ -968,6 +1103,8 @@ negation (e.g., ``not bad'' being classified as Negative).
 \caption{Confusion Matrix: SVM}\label{fig:cm-svm}
 \end{figure}
 
+\emph{SVM shows a stable distribution but struggles more with neutral samples compared to the high-performing Transformer models.}
+
 \begin{figure}[H]
 
 {\centering \includegraphics[width=0.75\linewidth]{Model/Result/naive_bayes_confusion_matrix} 
@@ -976,6 +1113,8 @@ negation (e.g., ``not bad'' being classified as Negative).
 
 \caption{Confusion Matrix: Naive Bayes}\label{fig:cm-nb}
 \end{figure}
+
+\emph{Naive Bayes serves as a solid baseline, though its matrix reveals more frequent misclassifications due to its ``bag-of-words'' independence assumption.}
 
 \subsection{10.4 Threshold Analysis: ROC
 Curves}\label{threshold-analysis-roc-curves}
@@ -1038,30 +1177,36 @@ Functionality}\label{features-functionality}
 \begin{itemize}
 \tightlist
 \item
-  \textbf{Real-time Prediction:} Users can input any text to see how the
-  RoBERTa model classifies its sentiment.
-\item
   \textbf{Historical Trends:} Interactive charts showing sentiment
   evolution over time.
 \item
   \textbf{Model Comparison:} A dynamic leaderboard showing the
   performance metrics of all 7 models.
+\item
+  \textbf{Advanced Filtering:} Users can filter results by platform, date range, and sentiment strength.
 \end{itemize}
 
 \subsection{11.2 Website Link \&
 Interface}\label{website-link-interface}
 
 The dashboard is hosted at the following link: \textbf{{[}Link to
-Dashboard: \url{https://sentiment-analysis-jemib.streamlit.app}{]}}
+Dashboard: \url{https://jemin-sentiment-dashboard.lovable.app/}{]}}
 
 \subsubsection{Dashboard Screenshots}\label{dashboard-screenshots}
 
-Below are a couple of screenshots showcasing the user interface and the
-interactive visualizations.
+Below are screenshots showcasing the user interface and the interactive visualizations.
 
-\emph{(Insert Screenshot 1: Overview of the sentiment distribution
-dashboard)} \emph{(Insert Screenshot 2: Real-time sentiment prediction
-interface)}
+\begin{figure}[H]
+{\centering \includegraphics[width=1\linewidth]{Model/Result/dashboard_overview} 
+}
+\caption{Figure 6: Overview of the Sentiment Distribution Dashboard}\label{fig:dashboard-overview}
+\end{figure}
+
+\begin{figure}[H]
+{\centering \includegraphics[width=1\linewidth]{Model/Result/dashboard_analysis} 
+}
+\caption{Figure 7: Historical Trends and Platform-specific Analysis}\label{fig:dashboard-analysis}
+\end{figure}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 

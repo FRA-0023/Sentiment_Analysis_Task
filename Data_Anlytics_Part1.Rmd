@@ -1002,5 +1002,12 @@ cat("  SA_test_tokens.csv   —", nrow(tokens_test), "token rows\n")
 
 ------------------------------------------------------------------------
 
+# Interactive Sentiment Dashboard
+
+The final project dashboard is available at:
+**[Link to Dashboard: <https://jemin-sentiment-dashboard.lovable.app/>]**
+
+------------------------------------------------------------------------
+
 *Prepared by the IT&BI Associates Colombini Francesco & Hosen Jabed ·
 JEMIB Milano Bicocca · 2026*

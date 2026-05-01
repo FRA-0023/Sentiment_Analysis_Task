@@ -1125,13 +1125,19 @@ Transformer models excel at distinguishing between **Positive** and **Negative**
 knitr::include_graphics("Model/Result/roberta_confusion_matrix.png")
 ```
 
+*RoBERTa shows the cleanest diagonal, confirming its superior ability to handle complex social media nuances and sarcastic tones.*
+
 ```{r cm-bert-multi, out.width="75%", fig.cap="Confusion Matrix: Multilingual BERT", echo=FALSE}
 knitr::include_graphics("Model/Result/multilingual_bert_confusion_matrix.png")
 ```
 
+*The multilingual variant demonstrates similar patterns to RoBERTa, suggesting that its broad language training remains highly effective for English sentiment.*
+
 ```{r cm-bert, out.width="75%", fig.cap="Confusion Matrix: BERT", echo=FALSE}
 knitr::include_graphics("Model/Result/bert_confusion_matrix.png")
 ```
+
+*BERT Base maintains high accuracy for negative sentiment detection but shows slight confusion with neutral posts that use descriptive language.*
 
 ### 10.3.2 Classical ML performance (LogReg & SVM)
 Classical models are highly efficient but occasionally struggle with negation (e.g., "not bad" being classified as Negative).
@@ -1140,13 +1146,19 @@ Classical models are highly efficient but occasionally struggle with negation (e
 knitr::include_graphics("Model/Result/logistic_regression_confusion_matrix.png")
 ```
 
+*Logistic Regression displays surprisingly sharp classification for a keyword-based approach, though it lacks the contextual depth of Transformers.*
+
 ```{r cm-svm, out.width="75%", fig.cap="Confusion Matrix: SVM", echo=FALSE}
 knitr::include_graphics("Model/Result/svm_confusion_matrix.png")
 ```
 
+*SVM shows a stable distribution but struggles more with neutral samples compared to the high-performing Transformer models.*
+
 ```{r cm-nb, out.width="75%", fig.cap="Confusion Matrix: Naive Bayes", echo=FALSE}
 knitr::include_graphics("Model/Result/naive_bayes_confusion_matrix.png")
 ```
+
+*Naive Bayes serves as a solid baseline, though its matrix reveals more frequent misclassifications due to its "bag-of-words" independence assumption.*
 
 ## 10.4 Threshold Analysis: ROC Curves
 
@@ -1175,19 +1187,24 @@ The results of this analysis provide a clear roadmap for deployment and future i
 As part of the final project delivery, we have developed an interactive web application that allows stakeholders to engage with the model results in real-time.
 
 ## 11.1 Features & Functionality
-- **Real-time Prediction:** Users can input any text to see how the RoBERTa model classifies its sentiment.
 - **Historical Trends:** Interactive charts showing sentiment evolution over time.
 - **Model Comparison:** A dynamic leaderboard showing the performance metrics of all 7 models.
+- **Advanced Filtering:** Users can filter results by platform, date range, and sentiment strength.
 
 ## 11.2 Website Link & Interface
 The dashboard is hosted at the following link:
-**[Link to Dashboard: https://sentiment-analysis-jemib.streamlit.app]**
+**[Link to Dashboard: <https://jemin-sentiment-dashboard.lovable.app/>]**
 
 ### Dashboard Screenshots
-Below are a couple of screenshots showcasing the user interface and the interactive visualizations.
+Below are screenshots showcasing the user interface and the interactive visualizations.
+ 
+```{r dashboard-overview, out.width="100%", fig.cap="Figure 6: Overview of the Sentiment Distribution Dashboard", echo=FALSE}
+knitr::include_graphics("Model/Result/dashboard_overview.png")
+```
 
-*(Insert Screenshot 1: Overview of the sentiment distribution dashboard)*
-*(Insert Screenshot 2: Real-time sentiment prediction interface)*
+```{r dashboard-analysis, out.width="100%", fig.cap="Figure 7: Historical Trends and Platform-specific Analysis", echo=FALSE}
+knitr::include_graphics("Model/Result/dashboard_analysis.png")
+```
 
 ------------------------------------------------------------------------
 
