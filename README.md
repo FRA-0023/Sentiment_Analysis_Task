@@ -133,7 +133,7 @@ Common functions and shared utilities are provided in `common_utils.py`, includi
 
 ## 👥 Authors
 
-JEMIB Project Team: Colombini Francesco & Hosen Jabed - University of Milan (UNIMIB)
+JEMIB Project Team: Colombini Francesco & Hosen Jabed - University of Milan Bicocca (UNIMIB)
 
 ## 📚 References
 
