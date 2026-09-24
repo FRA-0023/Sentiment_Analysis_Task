@@ -1,8 +1,9 @@
-﻿# 🧠 Sentiment Analysis Task: Classical ML vs. Deep Transformer Architectures
+# 🧠 Sentiment Analysis Task: Classical ML vs. Deep Transformer Architectures
 
 [![Language](https://img.shields.io/badge/Language-Python%203.10+%20%7C%20PyTorch-EE4C2C?style=flat&logo=pytorch)](https://pytorch.org/)
 [![Models](https://img.shields.io/badge/Models-BERT%20%7C%20RoBERTa%20%7C%20DistilBERT-blue?logo=huggingface)](https://huggingface.co/)
 [![Report](https://img.shields.io/badge/Report-Complete%20Research%20Report-red?logo=adobeacrobatreader)](Full_Project_Report.pdf)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 > Systematic empirical benchmark comparing classical linear algorithms (SVM, Naive Bayes, Logistic Regression) against fine-tuned Transformer models (BERT, RoBERTa, DistilBERT) on real-world sentiment classification.
 
